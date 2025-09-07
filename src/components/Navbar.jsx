@@ -40,37 +40,38 @@ const Navbar = ({ setSearchQuery, currentView, setCurrentView, favoritesCount, c
     <div className="fixed flex flex-col sm:flex-row justify-between items-center px-3 sm:px-4 md:px-8 lg:px-[60px] py-3 sm:py-4 lg:py-[20px] top-0 left-0 w-full bg-white shadow-md z-50">
       {/* Left section - User info and logout */}
       <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto justify-between sm:justify-start">
-        <button 
-          onClick={handleLogout} 
+        <button
+          onClick={handleLogout}
           className="text-xs sm:text-sm w-[60px] sm:w-[70px] text-white h-[30px] sm:h-[35px] bg-red-600 rounded-[8px] sm:rounded-[10px] touch-manipulation"
         >
           Logout
         </button>
-        <p className="text-sm sm:text-base lg:text-[18px] font-[600] truncate">Hello, {userName}</p>
-        
+
         {/* Logo on mobile - moved to left section for better layout */}
-        <img 
-          src={biglogo} 
-          alt="logo" 
-          className="w-[60px] h-[45px] sm:hidden" 
+        <img
+          src={biglogo}
+          alt="logo"
+          className="w-[60px] h-[45px] sm:hidden"
         />
+        <p className="text-sm sm:text-base lg:text-[18px] font-[600] truncate">Hello, {userName}</p>
+
       </div>
 
       {/* Center section - Logo (desktop only) */}
-      <img 
-        src={biglogo} 
-        alt="logo" 
-        className="hidden sm:block w-[70px] h-[55px] md:w-[85px] md:h-[65px] lg:w-[100px] lg:h-[75px]" 
+      <img
+        src={biglogo}
+        alt="logo"
+        className="hidden sm:block w-[70px] h-[55px] md:w-[85px] md:h-[65px] lg:w-[100px] lg:h-[75px]"
       />
 
       {/* Right section - Search and actions */}
       <div className="flex justify-center items-center gap-3 sm:gap-4 lg:gap-[24px] w-full sm:w-auto mt-2 sm:mt-0">
         {currentView === 'products' && (
           <div className="relative flex-1 sm:flex-none">
-            <img 
-              src={search} 
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 w-[12px] h-[12px] sm:w-[15px] sm:h-[15px]" 
-              alt="search" 
+            <img
+              src={search}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 w-[12px] h-[12px] sm:w-[15px] sm:h-[15px]"
+              alt="search"
             />
             <input
               type="text"
@@ -101,10 +102,10 @@ const Navbar = ({ setSearchQuery, currentView, setCurrentView, favoritesCount, c
           onClick={() => setCurrentView('cart')}
           className="relative touch-manipulation"
         >
-          <img 
-            src={korzina} 
-            className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] lg:w-[25px] lg:h-[25px]" 
-            alt="cart" 
+          <img
+            src={korzina}
+            className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] lg:w-[25px] lg:h-[25px]"
+            alt="cart"
           />
           {cartCount > 0 && (
             <span className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-red-500 text-white text-[10px] sm:text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">

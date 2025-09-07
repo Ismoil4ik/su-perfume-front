@@ -125,7 +125,17 @@ const LoginLayout = () => {
                     }`}
                 aria-hidden={!visible}
             >
-                <img src={biglogo} alt="logo" className="w-full h-full object-cover" />
+                {/* Показываем biglogo на экранах больше 700px, logo на 700px и меньше */}
+                <img 
+                    src={biglogo} 
+                    alt="logo" 
+                    className="w-full h-full object-cover block min-[701px]:block max-[700px]:hidden" 
+                />
+                <img 
+                    src={logo} 
+                    alt="logo" 
+                    className="w-80 h-60 object-contain hidden min-[701px]:hidden max-[700px]:block" 
+                />
             </div>
 
             {/* Карточка */}
