@@ -54,6 +54,19 @@ const AddProductForm = ({ onAddProduct, loading }) => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUploadMethod, setImageUploadMethod] = useState('url'); // 'url' or 'file'
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+
+  // Convert file to base64 URL
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,14 +76,96 @@ const AddProductForm = ({ onAddProduct, loading }) => {
     }));
   };
 
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите файл изображения');
+        return;
+      }
+
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Размер файла не должен превышать 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload file to server
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      // Здесь нужно будет заменить на ваш endpoint для загрузки изображений
+      const response = await fetch('https://su-perfume-api-production.up.railway.app/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки изображения');
+      }
+
+      const data = await response.json();
+      return data.imageUrl; // Предполагаем, что сервер возвращает { imageUrl: "..." }
+    } catch (error) {
+      console.error('Upload error:', error);
+      // Fallback - используем base64 если нет сервера для загрузки
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      let imageUrl = formData.imgURL;
+
+      // If file upload method is selected and file is chosen
+      if (imageUploadMethod === 'file' && selectedFile) {
+        imageUrl = await convertFileToBase64(selectedFile);
+      }
+
+      // Validate that we have an image URL
+      if (!imageUrl && imageUploadMethod === 'url') {
+        alert('Пожалуйста, введите URL изображения');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!imageUrl && imageUploadMethod === 'file') {
+        alert('Пожалуйста, выберите файл изображения');
+        setIsSubmitting(false);
+        return;
+      }
+
       const productData = {
         ...formData,
-        cost: parseFloat(formData.cost)
+        cost: parseFloat(formData.cost),
+        imgURL: imageUrl
       };
 
       // Get token from localStorage
@@ -97,6 +192,8 @@ const AddProductForm = ({ onAddProduct, loading }) => {
         description: '',
         imgURL: ''
       });
+      setSelectedFile(null);
+      setImagePreview('');
 
       onAddProduct();
     } catch (error) {
@@ -181,19 +278,95 @@ const AddProductForm = ({ onAddProduct, loading }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL изображения
+              Способ добавления изображения
             </label>
-            <input
-              type="url"
-              name="imgURL"
-              value={formData.imgURL}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-              placeholder="https://example.com/image.jpg"
-            />
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="url"
+                  checked={imageUploadMethod === 'url'}
+                  onChange={(e) => {
+                    setImageUploadMethod(e.target.value);
+                    setSelectedFile(null);
+                    setImagePreview('');
+                  }}
+                  className="mr-2"
+                />
+                По URL
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="file"
+                  checked={imageUploadMethod === 'file'}
+                  onChange={(e) => {
+                    setImageUploadMethod(e.target.value);
+                    setFormData(prev => ({ ...prev, imgURL: '' }));
+                  }}
+                  className="mr-2"
+                />
+                Из галереи
+              </label>
+            </div>
           </div>
         </div>
+
+        {/* Image Upload Section */}
+        <div>
+          {imageUploadMethod === 'url' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                URL изображения
+              </label>
+              <input
+                type="url"
+                name="imgURL"
+                value={formData.imgURL}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Выберите изображение
+              </label>
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                />
+                <p className="text-xs text-gray-500">
+                  Поддерживаемые форматы: JPG, PNG, GIF, WebP. Максимальный размер: 5MB
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Image Preview */}
+        {(imagePreview || (imageUploadMethod === 'url' && formData.imgURL)) && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Предварительный просмотр
+            </label>
+            <div className="border border-gray-300 rounded-md p-2 bg-gray-50">
+              <img
+                src={imagePreview || formData.imgURL}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded-md mx-auto"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
