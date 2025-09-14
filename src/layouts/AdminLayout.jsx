@@ -338,11 +338,12 @@ const AddProductForm = ({ onAddProduct, loading }) => {
                 <input
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   onChange={handleFileSelect}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
                 />
                 <p className="text-xs text-gray-500">
-                  Поддерживаемые форматы: JPG, PNG, GIF, WebP. Максимальный размер: 5MB
+                  Поддерживаемые форматы: JPG, PNG, GIF, WebP, HEIC. Автоматическое сжатие до 800px
                 </p>
               </div>
             </div>
